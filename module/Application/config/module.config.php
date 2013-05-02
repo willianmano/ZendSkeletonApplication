@@ -90,4 +90,10 @@ return array(
             __DIR__ . '/../view',
         ),
     ),
+    'db' => array(
+        'driver'    => 'pdo',
+        'dsn'       => 'mysql:dbname=zf2pratica;host=localhost',
+        'username'  => 'root',
+        'password'  => '1234',
+    ),
 );

@@ -10,6 +10,7 @@
 namespace Application;
 
 use Zend\Mvc\ModuleRouteListener;
+use Zend\Mvc\MvcEvent;
 
 class Module
 {
@@ -19,8 +20,44 @@ class Module
         $eventManager        = $e->getApplication()->getEventManager();
         $moduleRouteListener = new ModuleRouteListener();
         $moduleRouteListener->attach($eventManager);
+
+        $moduleManager = $e->getApplication()->getServiceManager()->get('modulemanager');
+        
+        $sharedEvents = $moduleManager->getEventManager()->getSharedManager();
+        //adiciona eventos ao módulo
+        $sharedEvents->attach(
+            'Zend\Mvc\Controller\AbstractActionController',
+            MvcEvent::EVENT_DISPATCH,
+                array($this, 'mvcPreDispatch'),
+            100
+        );
     }
 
+    public function mvcPreDispatch($event)
+    {
+        $di = $event->getTarget()->getServiceLocator();
+        $routeMatch = $event->getRouteMatch();
+        $moduleName = $routeMatch->getParam('module');
+        $controllerName = $routeMatch->getParam('controller');
+        $actionName = $routeMatch->getParam('action');
+
+        // $params = $routeMatch->getParams();
+        // echo "<pre>";
+        // print_r($params);
+        // echo('Module: ' . $moduleName . '<br />Controller: ' . $controllerName . '<br>Action: ' . $actionName);
+        // exit();
+        
+        if ($moduleName == 'admin' && $controllerName == 'Admin\Controller\Index') {
+            $authService = $di->get('Core\Service\Auth');
+            if (! $authService->authorize()) {
+                $redirect = $event->getTarget()->redirect();
+                $redirect->toUrl('/application/auth');
+            }
+        }
+
+        return true;
+    }
+    
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';
