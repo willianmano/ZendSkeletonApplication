@@ -3,7 +3,8 @@ return array(
     'modules' => array(
         'Application',
         'Core',
-        'Skel'
+        'Skel',
+	'Admin',
     ),
     'module_listener_options' => array(
         'config_glob_paths'    => array(
